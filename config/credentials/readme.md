@@ -1,0 +1,1 @@
+Aqui nessa pasta vai o .json de credenciais do google.

@@ -1,0 +1,5 @@
+selenium
+undetected_chromedriver
+gspread
+oauth2client
+pandas
