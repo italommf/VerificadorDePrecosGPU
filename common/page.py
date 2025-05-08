@@ -1,33 +1,44 @@
 import gspread
 import pandas as pd
 from selenium.webdriver.common.by import By
-from common.chromedriver import UndetectedChromeDriver
+from common.chromedriver import UndetectedChromeDriver, ChromeDriver
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support import expected_conditions as EC
 from oauth2client.service_account import ServiceAccountCredentials
+from selenium.common.exceptions import TimeoutException, NoSuchElementException
 from config.settings import CAMINHO_CREDENCIAL
 
 class Rpa(UndetectedChromeDriver):
 
     def raspar_valor(self, site, url):
 
-        locator_valor_kabum_promo = (By.XPATH, '/html/body/div[1]/div/div[2]/main/article/section/div[3]/div[1]/div/div[1]/div[2]/div[1]/div[2]/div[1]/div/h4')
-        locator_valor_kabum_comum = (By.XPATH, '/html/body/div[1]/div/div[2]/main/article/section/div[2]/div[1]/div/div[1]/div[2]/div[1]/div[2]/div[1]/div/h4')
-       
+        locators = {
+            'locator_valor_kabum_1': (By.XPATH, '/html/body/div[1]/div/div[2]/main/article/section/div[3]/div[1]/div/div[1]/div[2]/div[1]/div[2]/div[1]/div/h4'),
+            'locator_valor_kabum_2': (By.XPATH, '/html/body/div[1]/div/div[2]/main/article/section/div[2]/div[1]/div/div[1]/div[2]/div[1]/div[2]/div[1]/div/h4'),
+            'locator_valor_kabum_3': (By.XPATH, '/html/body/div[1]/div/div[2]/main/article/section/div[3]/div[1]/div/div[1]/div[2]/div[1]/div[3]/div[1]/div/h4'),
+            'locator_valor_kabum_4': (By.CSS_SELECTOR, '#blocoValores > div.sc-a24aba34-3.hSVqxN > div.sc-a24aba34-1.cpLDBn > div > h4'),
+        }
+
         if site == 'kabum':
 
             self.driver.get(url)
 
             try:
 
-                elemento = WebDriverWait(self.driver, 5).until(
-                    EC.element_to_be_clickable(locator_valor_kabum_comum)
+                elemento = WebDriverWait(self.driver, 2).until(
+                    EC.element_to_be_clickable(locators['locator_valor_kabum_1'])
                 ).text
             
-            except TimeoutException:
-            
-                elemento = self.driver.find_element(*locator_valor_kabum_promo).text
+            except (TimeoutException, NoSuchElementException):
+                
+                for nome, locator in locators.items():
+
+                    try:
+                        elemento = self.driver.find_element(*locator).text
+                        break
+                    except (TimeoutException, NoSuchElementException):
+                        continue 
+
                 valor_formatado = 'Produto indisponível!'
 
             valor_formatado = float(elemento.replace('R$ ','').replace('.','').replace(',','.'))

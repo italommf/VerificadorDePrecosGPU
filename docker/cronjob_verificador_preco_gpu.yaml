@@ -1,27 +1,25 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: rpa-cronjob-verificador-preco-gpu          
+  name: rpa-cronjob-verificador-preco-gpu
 spec:
-  schedule: "0 9 * * *"  
-  timeZone: "America/Sao_Paulo"                                          
+  schedule: "0 9-22 * * *"
+  timeZone: "America/Sao_Paulo"
   jobTemplate:
     spec:
-      ttlSecondsAfterFinished: 60                                  
+      ttlSecondsAfterFinished: 60
+      activeDeadlineSeconds: 300
       template:
         metadata:
-          name: rpa-cronjob-verificador-preco-gpu   
+          name: rpa-cronjob-verificador-preco-gpu
         spec:
-          restartPolicy: Never
           imagePullSecrets:
-            - name: docker-hub-secret                            
+          - name: italommf-secret
+          restartPolicy: Never
           containers:
-            - name: rpa                                               
-              image: italommf/verificador_preco_gpu:latest   
+            - name: rpa
+              image: italommf/verificador_preco_gpu:latest
               imagePullPolicy: Always
               env:
                 - name: NOME_AUTOMACAO
                   value: "verificador_preco_gpu"
-              resources:
-                limits:
-                  memory: "256Mi"
