@@ -22,12 +22,12 @@ class Rpa(UndetectedChromeDriver):
             try:
 
                 elemento = WebDriverWait(self.driver, 5).until(
-                    EC.element_to_be_clickable(locator_valor_kabum_promo)
+                    EC.element_to_be_clickable(locator_valor_kabum_comum)
                 ).text
             
             except TimeoutException:
             
-                elemento = self.driver.find_element(*locator_valor_kabum_comum).text
+                elemento = self.driver.find_element(*locator_valor_kabum_promo).text
                 valor_formatado = 'Produto indisponível!'
 
             valor_formatado = float(elemento.replace('R$ ','').replace('.','').replace(',','.'))
@@ -70,10 +70,6 @@ class Rpa(UndetectedChromeDriver):
         return planilha.worksheet(nome_aba)
 
     def atualizar_aba_com_dataframe(self, worksheet, dataframe):
-
-        # valores = [dataframe.columns.tolist()] + dataframe.values.tolist()
-        # worksheet.clear()
-        # worksheet.update("A1", valores)
 
         valores = [dataframe.columns.tolist()] + dataframe.values.tolist()
 
