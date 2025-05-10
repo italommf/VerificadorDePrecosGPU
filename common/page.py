@@ -94,3 +94,10 @@ class Rpa(UndetectedChromeDriver):
         worksheet.batch_clear([intervalo])
 
         worksheet.update(worksheet_range_inicio, valores_sem_coluna_A)
+
+    def parse_valor(self, valor):
+        
+        try:
+            return float(valor.replace('.', '').replace(',', '.'))
+        except:
+            return None
