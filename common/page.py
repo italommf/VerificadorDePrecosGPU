@@ -1,11 +1,14 @@
 import gspread
 import pandas as pd
+from gspread.utils import rowcol_to_a1
 from selenium.webdriver.common.by import By
-from common.chromedriver import UndetectedChromeDriver, ChromeDriver
+from common.chromedriver import UndetectedChromeDriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from oauth2client.service_account import ServiceAccountCredentials
+from gspread_formatting import CellFormat, format_cell_range, NumberFormat
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
+
 from config.settings import CAMINHO_CREDENCIAL
 
 class Rpa(UndetectedChromeDriver):
@@ -39,12 +42,12 @@ class Rpa(UndetectedChromeDriver):
                     except (TimeoutException, NoSuchElementException):
                         continue 
 
-                valor_formatado = 'Produto indisponível!'
-
-            valor_formatado = float(elemento.replace('R$ ','').replace('.','').replace(',','.'))
-            
-            return valor_formatado
-        
+            try:
+                if elemento:
+                    return elemento
+            except:
+                return 'Produto indisponível!'
+  
     def conectar_google_sheets(self, nome_arquivo_credenciais, nome_planilha):
         
         escopo = [
@@ -90,14 +93,49 @@ class Rpa(UndetectedChromeDriver):
 
         colunas = len(valores_sem_coluna_A[0])
         linhas = len(valores_sem_coluna_A)     
-        intervalo = f"B1:{chr(65 + colunas)}{linhas}"  
+        ultima_celula = rowcol_to_a1(linhas, colunas + 1)  # +1 para começar de B
+        intervalo = f"B1:{ultima_celula}"
         worksheet.batch_clear([intervalo])
+
+        formato_moeda = CellFormat(
+            numberFormat = NumberFormat(type='CURRENCY', pattern='R$ #,##0.00')
+        )
+
+        format_cell_range(worksheet, intervalo, formato_moeda)
 
         worksheet.update(worksheet_range_inicio, valores_sem_coluna_A)
 
-    def parse_valor(self, valor):
+    def converter_valor_para_float(self, valor):
         
         try:
-            return float(valor.replace('.', '').replace(',', '.'))
+            if not ',' in valor:
+                return float(str(valor).replace("R$", "").replace(",", ".").strip())
+
+            return float(str(valor).replace("R$ ", "").replace(".", "").replace(",", ".").strip())
         except:
             return None
+
+    def converter_valor_para_real(self, valor):
+        
+        return f"R$ {valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
+
+    def obter_planilhas(self):
+
+        print('Obtendo Planilha de Controle')
+        planilha_de_controle = self.obter_worksheet_dataframe(
+            '1qbo5NnHHlcoRCCBg9w79FDq31YXO7_VDWG48y-ZoE6Y',
+            'Controle - Valor Atual'
+        )
+
+        print('Obtendo planilha Histórico de Preços')
+        historico_de_precos = self.obter_worksheet_dataframe(
+            '1qbo5NnHHlcoRCCBg9w79FDq31YXO7_VDWG48y-ZoE6Y',
+            'Histórico de Preços'
+        )
+
+        dataframes = {
+            'Planilha de Controle': planilha_de_controle,
+            'Histórico de Preços': historico_de_precos
+        }
+        return dataframes
