@@ -9,7 +9,7 @@ rpa = Rpa(headless = True)
 url = 'https://www.kabum.com.br/produto/576423/placa-de-video-rx-7800xt-gaming-16g-xfx-speedster-qick319-amd-radeon-16gb-ddr6-hdmi-3xdp-3-fan-rx-78tqickf9'
 
 fuso_natal = pytz.timezone('America/Recife')
-data_hora_atual = datetime.now(fuso_natal).strftime("%d/%m/%Y - %H:%M")
+data_hora_atual = datetime.now(fuso_natal).strftime("%d/%m - %H:%M")
 print(f'Inciando Verificador de Preços! Data/Hora atual da execução: {data_hora_atual}')
 
 print('Obtendo Planilha de Controle')
